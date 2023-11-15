@@ -1,15 +1,22 @@
-use std::process::exit;
+use driver::Runner;
 
+use crate::{
+    driver::detect::find_driver,
+    errors::{NotGitRepo, SysErrorHandler},
+};
+
+pub mod cred;
 mod driver;
+mod errors;
+mod tidal;
 
 #[tokio::main]
 async fn main() {
-    let Ok(repo) = gix::discover(".") else {
-        eprintln!("current directory is not in a repository");
-        exit(1);
-    };
+    let repo = gix::discover(".")
+        .map_err(|_| NotGitRepo)
+        .handle_system_error();
 
-    let config = repo.config_snapshot();
+    let driver = find_driver(&repo).handle_system_error();
 
-    println!("Hello, world!");
+    driver.run(repo).await.handle_system_error();
 }
