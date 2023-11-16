@@ -69,6 +69,11 @@ impl Req {
         let mut from_remote = false;
         let mut to_remote = false;
 
+        if self.to.branch == self.from.branch && self.to.remote == self.from.remote {
+            return Err(ReqError::SameRef);
+
+        }
+
         for reference in repo.references().unwrap().local_branches().unwrap() {
             let xyz = reference.unwrap();
             let b = xyz.name().shorten();

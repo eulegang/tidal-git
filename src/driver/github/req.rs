@@ -18,7 +18,10 @@ pub struct CreatePullRequest {
 
 #[derive(Serialize, Debug)]
 pub enum Id {
+    #[serde(rename = "title")]
     Title(String),
+
+    #[serde(rename = "issue")]
     Issue(u64),
 }
 
@@ -35,17 +38,22 @@ pub async fn send_request(
     token: &str,
     req: CreatePullRequest,
 ) -> Result<CreatePullRequestResponse, GithubError> {
-    let url = format!("https://{base}/repos/{owner}/{repo}");
+    let url = format!("https://{base}/repos/{owner}/{repo}/pulls");
 
     let req = client
         .post(url)
+        .header("User-Agent", "Tidal")
         .header("Accept", "application/vnd.github+json")
         .header("X-GitHub-Api-Version", "2022-11-28")
         .header("Authorization", format!("Bearer {}", token))
         .json(&req);
 
     let res = req.send().await?;
-    let res = res.error_for_status()?;
+    if let Err(e) = res.error_for_status_ref() {
+        log::error!("failed request: {}", res.text().await.unwrap());
+        return Err(GithubError::Http(e));
+    }
+
     let res: CreatePullRequestResponse = res.json().await?;
 
     Ok(res)
