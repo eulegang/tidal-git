@@ -9,7 +9,7 @@ use clap::Parser;
 
 mod req;
 
-pub use req::{Ref, Req};
+pub use req::{Ref, Req, ReqError};
 
 #[derive(Parser, Debug)]
 pub struct Common {

@@ -1,6 +1,6 @@
 use gix::Repository;
 
-use crate::errors::Error;
+use crate::{errors::Error, tidal::Req};
 
 use self::github::GithubError;
 
@@ -18,14 +18,14 @@ pub enum DriverError {
 
 #[async_trait::async_trait]
 pub trait Runner {
-    async fn run(self, repo: Repository) -> Result<(), DriverError>;
+    async fn run(self, repo: Repository, req: Req) -> Result<(), DriverError>;
 }
 
 #[async_trait::async_trait]
 impl Runner for Driver {
-    async fn run(self, repo: Repository) -> Result<(), DriverError> {
+    async fn run(self, repo: Repository, req: Req) -> Result<(), DriverError> {
         match self {
-            Driver::Github(inner) => inner.run(repo).await,
+            Driver::Github(inner) => inner.run(repo, req).await,
         }
     }
 }
